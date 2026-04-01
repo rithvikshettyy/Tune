@@ -13,11 +13,11 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center gap-4 -ml-1">
             <div className="bg-black p-1.5 rounded-lg shadow-sm">
-              <Image 
-                src="/devtune-logo.png" 
-                alt="Tune CLI Logo" 
-                width={24} 
-                height={24} 
+              <Image
+                src="/devtune-logo.png"
+                alt="Tune CLI Logo"
+                width={24}
+                height={24}
                 className="opacity-90"
               />
             </div>
