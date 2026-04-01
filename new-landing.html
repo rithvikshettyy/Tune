@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tune CLI — Your IDE, Supercharged.</title>
+    <!-- Google Fonts: Host Grotesk and JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+        rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #F8F7F4;
+            --text-heading: #0D0D0D;
+            --text-body: #4A4A4A;
+            --accent: #2563EB;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E5E5;
+            --mono-font: 'JetBrains Mono', monospace;
+            --display-font: 'Host Grotesk', sans-serif;
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+            /* Custom cursor handling */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-body);
+            font-family: var(--display-font);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Custom Cursor */
+        #cursor-dot {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        #cursor-trail {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transition: transform 0.15s ease-out;
+        }
+
+        .cursor-crosshair #cursor-dot {
+            width: 2px;
+            height: 20px;
+            border-radius: 0;
+            transform: scale(1.5);
+        }
+
+        .cursor-crosshair #cursor-dot::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background: var(--accent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Background Grid */
+        #bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+            background-image:
+                radial-gradient(circle, var(--text-body) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: drift 100s linear infinite;
+        }
+
+        @keyframes drift {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 1000px 1000px;
+            }
+        }
+
+        header {
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background: rgba(248, 247, 244, 0.8);
+            backdrop-blur: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-family: var(--mono-font);
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-body);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+        }
+
+        /* Layout Helpers */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 5%;
+        }
+
+        section {
+            padding: 8rem 0;
+        }
+
+        .micro-label {
+            font-family: var(--mono-font);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: var(--text-body);
+            opacity: 0.5;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 10vh;
+            position: relative;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-cols: 1.2fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            line-height: 0.9;
+            color: var(--text-heading);
+            margin-bottom: 2rem;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 500px;
+            margin-bottom: 3rem;
+            color: var(--text-body);
+            opacity: 0.8;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            border: 1px solid var(--accent);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-heading);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-heading);
+            background: white;
+        }
+
+        /* Terminal UI */
+        .terminal {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: var(--mono-font);
+            font-size: 0.85rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.05);
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 2rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+
+        .typewriter {
+            color: var(--text-heading);
+            min-height: 1.5em;
+        }
+
+        .typewriter::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-cols: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2.5rem;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
+        }
+
+        .badge {
+            font-family: var(--mono-font);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .badge-ai {
+            background: rgba(22, 163, 74, 0.1);
+            color: #16A34A;
+        }
+
+        .badge-npm {
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563EB;
+        }
+
+        .badge-vsc {
+            background: rgba(0, 0, 0, 0.05);
+            color: #000000;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--text-body);
+            opacity: 0.7;
+        }
+
+        .preview-ui {
+            margin-top: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #FDFCFB;
+            padding: 0.75rem;
+            font-family: var(--mono-font);
+            font-size: 0.75rem;
+        }
+
+        /* How It Works */
+        .how-it-works-flow {
+            display: grid;
+            grid-template-cols: repeat(3, 1fr);
+            gap: 4rem;
+            position: relative;
+        }
+
+        .step-card {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-family: var(--mono-font);
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4rem 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-family: var(--mono-font);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+        }
+
+        /* Install CTA */
+        .install-cta {
+            background: #0D0D0D;
+            color: white;
+            border-radius: 24px;
+            padding: 6rem;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .install-cta h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            letter-spacing: -0.04em;
+        }
+
+        .code-box {
+            background: #1A1A1A;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2rem;
+            font-family: var(--mono-font);
+            border: 1px solid #333;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            opacity: 0.4;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        /* Animation Classes */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 968px) {
+            .hero-content {
+                grid-template-cols: 1fr;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+
+            .cta-group {
+                justify-content: center;
+            }
+
+            .features-grid,
+            .how-it-works-flow {
+                grid-template-cols: 1fr;
+                gap: 2rem;
+            }
+
+            .stats-row {
+                flex-direction: column;
+                gap: 3rem;
+            }
+
+            .install-cta {
+                padding: 4rem 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="cursor-dot"></div>
+    <div id="cursor-trail"></div>
+    <div id="bg-grid"></div>
+
+    <header>
+        <div class="logo">TUNE CLI // 01</div>
+        <nav class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#how" class="nav-link">Workflow</a>
+            <a href="#docs" class="nav-link">Docs</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div>
+                    <span class="micro-label">// HELLO WORLD</span>
+                    <h1 class="stagger">YOUR IDE, <br>SUPERCHARGED.</h1>
+                    <p class="stagger">Professional-grade Spotify management directly from the terminal. Minimal
+                        latency, maximum focus.</p>
+                    <div class="cta-group stagger">
+                        <a href="https://www.npmjs.com/package/@rithvik7/devtune" target="_blank"
+                            class="btn btn-primary" onmouseover="setCrosshair(true)" onmouseout="setCrosshair(false)">
+                            <i data-lucide="download"></i> Install Extension
+                        </a>
+                        <a href="https://github.com/rithvikshettyy" target="_blank" class="btn btn-outline"
+                            onmouseover="setCrosshair(true)" onmouseout="setCrosshair(false)">
+                            <i data-lucide="package"></i> npm install
+                        </a>
+                    </div>
+                </div>
+                <div class="terminal stagger">
+                    <div class="terminal-header">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <div id="terminal-content" class="typewriter"></div>
+                </div>
+            </div>
+            <!-- Glow Orb -->
+            <div
+                style="position: absolute; width: 400px; height: 400px; background: var(--accent); filter: blur(150px); opacity: 0.03; top: 0; right: 0; pointer-events: none;">
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- Features Grid -->
+        <section id="features">
+            <span class="micro-label">// CAPABILITIES</span>
+            <h2
+                style="font-size: 3rem; font-weight: 800; color: var(--text-heading); margin-bottom: 4rem; letter-spacing: -0.04em;">
+                INTELLIGENT AUDIO.</h2>
+            <div class="features-grid">
+                <div class="card fade-up">
+                    <span class="badge badge-vsc">VS Code</span>
+                    <h3>Command Palette</h3>
+                    <p>Trigger playback states without leaving your editor. Integrated directly into the VS Code
+                        ecosystem.</p>
+                    <div class="preview-ui">
+                        <span style="color: #666">> Tune: </span>Play Track
+                    </div>
+                </div>
+                <div class="card fade-up" style="transition-delay: 0.1s;">
+                    <span class="badge badge-npm">npm</span>
+                    <h3>The Runtime</h3>
+                    <p>Low-latency execution using the Spotify Web API. Optimized for minimal CPU and memory footprint.
+                    </p>
+                    <div class="preview-ui">
+                        <span style="color: #2563EB">tune</span> status <br>
+                        <span style="color: #16A34A">now playing:</span> midnight city
+                    </div>
+                </div>
+                <div class="card fade-up" style="transition-delay: 0.2s;">
+                    <span class="badge badge-ai">AI-Powered</span>
+                    <h3>Smart Focus</h3>
+                    <p>Intelligent playlist switching based on your current project type and development tempo.</p>
+                    <div class="preview-ui">
+                        <span style="color: #666">// AI: </span>Switching to Focus mode
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- How It Works -->
+        <section id="how">
+            <span class="micro-label">// WORKFLOW</span>
+            <h2
+                style="font-size: 3rem; font-weight: 800; color: var(--text-heading); margin-bottom: 6rem; letter-spacing: -0.04em;">
+                QUIET INTELLIGENCE.</h2>
+            <div class="how-it-works-flow">
+                <div class="step-card fade-up">
+                    <div class="step-number">01</div>
+                    <h4 style="color: var(--text-heading); font-weight: 800; margin-bottom: 1rem;">Authenticate</h4>
+                    <p style="font-size: 0.9rem; opacity: 0.6;">One-time PKCE secure browser authorization.</p>
+                </div>
+                <div class="step-card fade-up" style="transition-delay: 0.1s;">
+                    <div class="step-number">02</div>
+                    <h4 style="color: var(--text-heading); font-weight: 800; margin-bottom: 1rem;">Configure</h4>
+                    <p style="font-size: 0.9rem; opacity: 0.6;">Set your default focus and hype playlists.</p>
+                </div>
+                <div class="step-card fade-up" style="transition-delay: 0.2s;">
+                    <div class="step-number">03</div>
+                    <h4 style="color: var(--text-heading); font-weight: 800; margin-bottom: 1rem;">Accelerate</h4>
+                    <p style="font-size: 0.9rem; opacity: 0.6;">Control everything via global hotkeys or shell.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <span class="stat-value" data-value="100">0</span>
+                <span class="stat-label">Downloads</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" data-value="420">0</span>
+                <span class="stat-label">GitHub Stars</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" data-value="2800">0</span>
+                <span class="stat-label">Extensions</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" data-value="1">0</span>
+                <span class="stat-label">Mission</span>
+            </div>
+        </div>
+
+        <!-- Final CTA -->
+        <section style="padding: 10rem 0;">
+            <div class="install-cta fade-up">
+                <span class="micro-label" style="color: rgba(255,255,255,0.4);">// START BUILDING</span>
+                <h2>READY TO TUNE IN?</h2>
+                <div class="code-box">
+                    <span>npm install -g @rithvik7/devtune</span>
+                    <button class="copy-btn" title="Copy to clipboard" onclick="copyCode()">
+                        <i data-lucide="copy"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer
+        style="padding: 4rem 5%; text-align: center; opacity: 0.4; font-size: 0.8rem; font-family: var(--mono-font);">
+        © 2026 TUNE CLI // BUILT FOR THE MODERN ARCHITECT.
+    </footer>
+
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Custom Cursor
+        const dot = document.getElementById('cursor-dot');
+        const trail = document.getElementById('cursor-trail');
+
+        window.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+
+            setTimeout(() => {
+                trail.style.left = e.clientX + 'px';
+                trail.style.top = e.clientY + 'px';
+            }, 50);
+        });
+
+        function setCrosshair(bool) {
+            if (bool) document.body.classList.add('cursor-crosshair');
+            else document.body.classList.remove('cursor-crosshair');
+        }
+
+        // Typewriter Effect
+        const termContent = document.getElementById('terminal-content');
+        const text = "tune login --secure";
+        let i = 0;
+
+        function type() {
+            if (i < text.length) {
+                termContent.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, 100);
+            } else {
+                setTimeout(() => {
+                    termContent.innerHTML += "<br><span style='color: var(--accent)'>✔ Authorizing...</span>";
+                }, 500);
+            }
+        }
+        setTimeout(type, 1500);
+
+        // Intersection Observer for fade-up animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // If it's a stat-value, start counting
+                    if (entry.target.classList.contains('stat-value')) {
+                        const target = parseInt(entry.target.getAttribute('data-value'));
+                        countUp(entry.target, target);
+                    }
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-up, .stat-value').forEach(el => observer.observe(el));
+
+        // Staggered Hero Animation
+        document.querySelectorAll('.hero .stagger').forEach((el, index) => {
+            setTimeout(() => {
+                el.classList.add('fade-up', 'visible');
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 200 + (index * 150));
+        });
+
+        // Stats Count Up
+        function countUp(el, target) {
+            let current = 0;
+            const duration = 2000;
+            const step = Math.ceil(target / (duration / 16));
+
+            const counter = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    el.innerText = target.toLocaleString() + (target > 10 ? '+' : '');
+                    clearInterval(counter);
+                } else {
+                    el.innerText = current.toLocaleString();
+                }
+            }, 16);
+        }
+
+        // Clipboard 
+        function copyCode() {
+            navigator.clipboard.writeText('npm install -g @rithvik7/devtune');
+            const icon = document.querySelector('.copy-btn i');
+            icon.setAttribute('data-lucide', 'check');
+            lucide.createIcons();
+            setTimeout(() => {
+                icon.setAttribute('data-lucide', 'copy');
+                lucide.createIcons();
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

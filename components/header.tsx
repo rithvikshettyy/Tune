@@ -8,40 +8,52 @@ import { Button } from '@/components/ui/button'
 
 export default function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-[100] border-b border-border/20 bg-background/50 backdrop-blur-2xl">
+    <header className="fixed top-0 left-0 right-0 z-[100] border-b border-border bg-background/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center gap-3 -ml-1 sm:-ml-2">
-            <div className="w-12 h-12 relative transition-transform hover:scale-110">
-              <Image
-                src="/devtune-logo.png"
-                alt="DevTune Logo"
-                fill
-                className="object-contain"
+          <div className="flex items-center gap-4 -ml-1">
+            <div className="bg-black p-1.5 rounded-lg shadow-sm">
+              <Image 
+                src="/devtune-logo.png" 
+                alt="Tune CLI Logo" 
+                width={24} 
+                height={24} 
+                className="opacity-90"
               />
             </div>
-            <span className="text-[34px] leading-none text-foreground tracking-widest font-normal font-[family-name:var(--font-bebas)] translate-y-[1px]">DEVTUNE</span>
+            <span className="font-mono font-extrabold text-xl tracking-tighter text-foreground uppercase select-none">TUNE CLI // 01</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-10 font-bold">
-            <Link href="#features" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-              Features
-            </Link>
-            <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-              How it Works
-            </Link>
-            <Link href="#install" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-              Documentation
-            </Link>
+          <nav className="hidden md:flex items-center gap-12">
+            {[
+              { name: 'Features', href: '#features' },
+              { name: 'Workflow', href: '#how-it-works' },
+              { name: 'Docs', href: 'https://github.com/rithvikshettyy' }
+            ].map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                target={item.name === 'Docs' ? '_blank' : '_self'}
+                className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-            <Link href="https://github.com/rithvikshetty/DevTune" className="hidden sm:flex text-muted-foreground hover:text-foreground transition-colors mr-2">
-              <Github size={20} />
+          <div className="flex items-center gap-6">
+            <Link
+              href="https://github.com/rithvikshettyy"
+              target="_blank"
+              className="hidden sm:flex text-muted-foreground/60 hover:text-foreground transition-all hover:scale-110"
+            >
+              <Github size={18} />
             </Link>
-            <Button variant="default" size="lg" className="h-11 px-8 text-sm font-black rounded-xl hover:scale-105 transition-transform shadow-xl shadow-accent/10">
-              Get Started
-            </Button>
+            <Link href="https://www.npmjs.com/package/@rithvik7/devtune" target="_blank">
+              <Button variant="default" size="sm" className="px-6 h-10 text-[10px] uppercase font-bold tracking-widest bg-primary text-white hover:bg-primary/90 border-none rounded-lg shadow-sm">
+                Get Started
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
