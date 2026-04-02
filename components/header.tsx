@@ -15,7 +15,7 @@ export default function Header() {
             <div className="bg-black p-1.5 rounded-lg shadow-sm">
               <Image
                 src="/devtune-logo.png"
-                alt="Tune CLI Logo"
+                alt="Tune CLI Logos"
                 width={24}
                 height={24}
                 className="opacity-90"
